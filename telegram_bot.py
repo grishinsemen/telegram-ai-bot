@@ -425,12 +425,14 @@ def should_respond(message: dict, bot_username: Optional[str] = None) -> bool:
         reply_from = reply.get('from', {})
         if reply_from.get('is_bot'):
             if not bot_username or reply_from.get('username') == bot_username:
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ should_respond: True (reply на бота)", file=sys.stderr)
                 return True
     
     text = message.get('text', '') or message.get('caption', '')
     
     # Если это было голосовое сообщение (помечено после транскрипции) - всегда отвечаем
     if message.get('_was_voice'):
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ should_respond: True (было голосовое сообщение)", file=sys.stderr)
         return True
     
     # Если нет текста, но есть голосовое сообщение - нужно транскрибировать сначала
@@ -450,16 +452,24 @@ def should_respond(message: dict, bot_username: Optional[str] = None) -> bool:
     
     # Проверяем упоминание бота
     if text and bot_username and f'@{bot_username}' in text:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ should_respond: True (упоминание @{bot_username})", file=sys.stderr)
         return True
     
     # Проверяем текст на вопросы и обращения
     if text:
         text_lower = text.lower()
         if '?' in text:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ should_respond: True (есть вопрос '?')", file=sys.stderr)
             return True
-        if any(word in text_lower for word in ['бот', 'помоги', 'расскажи', 'объясни', 'скажи']):
+        keywords = ['бот', 'помоги', 'расскажи', 'объясни', 'скажи']
+        found_keywords = [word for word in keywords if word in text_lower]
+        if found_keywords:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ should_respond: True (найдены ключевые слова: {found_keywords})", file=sys.stderr)
             return True
     
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ should_respond: False (не подходит ни под одно условие)", file=sys.stderr)
+    print(f"[{datetime.now().strftime('%H:%M:%S')}]    Текст: '{text[:50]}...'", file=sys.stderr)
+    print(f"[{datetime.now().strftime('%H:%M:%S')}]    Bot username: {bot_username}", file=sys.stderr)
     return False
 
 def download_voice_file(bot_token: str, file_id: str, session: requests.Session) -> Optional[str]:
@@ -874,18 +884,27 @@ def process_updates(config: BotConfig, bot_username: Optional[str], session: req
         result = response.json()
         
         if not result.get('ok'):
+            error_desc = result.get('description', 'Неизвестная ошибка')
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ Telegram API ошибка: {error_desc}", file=sys.stderr)
             return
         
-        for update in result.get('result', []):
+        updates = result.get('result', [])
+        if updates:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] 📬 Получено обновлений: {len(updates)}", file=sys.stderr)
+        
+        for update in updates:
             update_id = update.get('update_id')
             message = update.get('message')
             
             if not message:
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] ⏭️ Обновление #{update_id} без сообщения (пропускаю)", file=sys.stderr)
                 update_manager.update(update_id)
                 continue
             
             msg_chat_id = str(message.get('chat', {}).get('id', ''))
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔍 Обновление #{update_id}: chat_id={msg_chat_id}, ожидаемый={config.chat_id}", file=sys.stderr)
             if msg_chat_id != str(config.chat_id):
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] ⏭️ Неправильный chat_id (пропускаю)", file=sys.stderr)
                 update_manager.update(update_id)
                 continue
             
@@ -1103,6 +1122,20 @@ def main():
         print("      Проверьте правильность bot_token", file=sys.stderr)
     
     print(f"\n💬 Чат ID: {config.chat_id}", file=sys.stderr)
+    
+    # Проверяем last_update_id
+    try:
+        if os.path.exists(LAST_UPDATE_ID_FILE):
+            with open(LAST_UPDATE_ID_FILE, 'r') as f:
+                last_id = f.read().strip()
+                if last_id:
+                    print(f"📋 Последний обработанный update_id: {last_id}", file=sys.stderr)
+                else:
+                    print(f"📋 Файл {LAST_UPDATE_ID_FILE} пуст, начну с начала", file=sys.stderr)
+        else:
+            print(f"📋 Файл {LAST_UPDATE_ID_FILE} не найден, начну с начала", file=sys.stderr)
+    except Exception as e:
+        print(f"⚠️ Не удалось прочитать {LAST_UPDATE_ID_FILE}: {e}", file=sys.stderr)
     
     # Удаляем webhook, если он установлен (для работы в режиме long polling)
     print("\n🔄 Проверяю режим работы бота...", file=sys.stderr)
