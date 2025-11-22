@@ -86,3 +86,5 @@ C:\Users\SEMEN\AppData\Roaming\Cursor\User\globalStorage\mcp.json
 
 
 
+
+

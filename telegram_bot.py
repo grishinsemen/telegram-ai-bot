@@ -1104,6 +1104,26 @@ def main():
     
     print(f"\n💬 Чат ID: {config.chat_id}", file=sys.stderr)
     
+    # Удаляем webhook, если он установлен (для работы в режиме long polling)
+    print("\n🔄 Проверяю режим работы бота...", file=sys.stderr)
+    try:
+        webhook_url = f"https://api.telegram.org/bot{config.bot_token}/getWebhookInfo"
+        webhook_response = session.get(webhook_url, timeout=10)
+        if webhook_response.status_code == 200:
+            webhook_info = webhook_response.json()
+            if webhook_info.get('ok') and webhook_info.get('result', {}).get('url'):
+                print("   ⚠️ Обнаружен установленный webhook, удаляю...", file=sys.stderr)
+                delete_url = f"https://api.telegram.org/bot{config.bot_token}/deleteWebhook"
+                delete_response = session.post(delete_url, timeout=10)
+                if delete_response.status_code == 200:
+                    print("   ✅ Webhook удален, бот переключен на режим long polling", file=sys.stderr)
+                else:
+                    print("   ⚠️ Не удалось удалить webhook автоматически", file=sys.stderr)
+            else:
+                print("   ✅ Бот работает в режиме long polling (getUpdates)", file=sys.stderr)
+    except Exception as e:
+        print(f"   ⚠️ Не удалось проверить webhook: {e}", file=sys.stderr)
+    
     print("\n" + "=" * 60, file=sys.stderr)
     print("📋 БОТ АКТИВЕН И СЛУШАЕТ СООБЩЕНИЯ", file=sys.stderr)
     print("=" * 60, file=sys.stderr)
