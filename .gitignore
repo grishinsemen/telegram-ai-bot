@@ -3,6 +3,10 @@ telegram_config.json
 tts_config.json
 mcp.json
 
+# Railway
+.railway/
+railway.toml
+
 # Локальные файлы состояния
 last_update_id.txt
 
