@@ -1,0 +1,41 @@
+# Конфигурация с API ключами (НЕ коммитить!)
+telegram_config.json
+tts_config.json
+mcp.json
+
+# Локальные файлы состояния
+last_update_id.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Аудио файлы (опционально, можно раскомментировать если не нужны в репозитории)
+# audio/
+# temp_voice/
+
+# Временные файлы
+*.tmp
+*.log
+*.bak
+*.swp
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+

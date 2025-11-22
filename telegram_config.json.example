@@ -1,0 +1,35 @@
+{
+  "bot_token": "YOUR_BOT_TOKEN_HERE",
+  "chat_id": "YOUR_CHAT_ID_HERE",
+  "zenmux_api_key": "YOUR_ZENMUX_API_KEY_HERE",
+  "zenmux_model": "google/gemini-3-pro-preview-free",
+  "zenmux_base_url": "https://zenmux.ai/api/v1",
+  "fallback_models": [
+    "google/gemini-3-pro-preview"
+  ],
+  "openrouter_api_key": "YOUR_OPENROUTER_API_KEY_HERE",
+  "openrouter_model": "openai/gpt-4o-mini",
+  "groq_api_key": "YOUR_GROQ_API_KEY_HERE",
+  "groq_model": "llama-3.3-70b-versatile",
+  "assemblyai_api_key": "YOUR_ASSEMBLYAI_API_KEY_HERE",
+  "deepgram_api_key": "YOUR_DEEPGRAM_API_KEY_HERE",
+  "lemonfox_api_key": "YOUR_LEMONFOX_API_KEY_HERE",
+  "personality": "putin",
+  "description": {
+    "bot_token": "Токен бота от @BotFather в Telegram. Создайте бота через /newbot и получите токен",
+    "chat_id": "ID чата или канала, куда отправлять сообщения. Можно узнать у @userinfobot или создать бота и написать ему, затем получить chat_id через API",
+    "zenmux_api_key": "API ключ от ZenMux.ai. Получите на https://zenmux.ai",
+    "zenmux_model": "Основная модель для использования через ZenMux.ai. Если не работает, автоматически пробуются запасные модели из fallback_models, затем OpenRouter. Пример: google/gemini-3-pro-preview-free",
+    "zenmux_base_url": "Базовый URL для ZenMux API (обычно https://zenmux.ai/api/v1)",
+    "fallback_models": "Список запасных моделей, которые будут пробоваться автоматически, если основная модель не работает. Порядок важен - модели пробуются по порядку",
+    "openrouter_api_key": "API ключ от OpenRouter (запасной вариант #1). Получите на https://openrouter.ai/keys",
+    "openrouter_model": "Модель для использования через OpenRouter (запасной вариант #1). Примеры: google/gemini-2.0-flash-exp:free, openai/gpt-4o-mini, anthropic/claude-3-haiku",
+    "groq_api_key": "API ключ от Groq (запасной вариант #2, быстрый и бесплатный). Получите на https://console.groq.com/keys",
+    "groq_model": "Модель для использования через Groq (запасной вариант #2). Примеры: llama-3.3-70b-versatile, llama-3.1-8b-instant, mixtral-8x7b-32768",
+    "assemblyai_api_key": "API ключ от AssemblyAI для транскрипции голосовых сообщений (опционально). Получите на https://www.assemblyai.com/app/account",
+    "deepgram_api_key": "API ключ от Deepgram для транскрипции голосовых сообщений (опционально). Получите на https://console.deepgram.com/signup",
+    "lemonfox_api_key": "API ключ от Lemonfox.ai для транскрипции голосовых сообщений (опционально). Получите на https://lemonfox.ai",
+    "personality": "Личность бота. Варианты: putin, default, friendly, professional, funny. Или кастомный текст для описания личности"
+  }
+}
+

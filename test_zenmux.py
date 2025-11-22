@@ -1,0 +1,121 @@
+# -*- coding: utf-8 -*-
+"""Тест ZenMux.ai API"""
+import sys
+import json
+import requests
+
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
+def test_zenmux(api_key, model="google/gemini-3-pro-preview-free", base_url="https://zenmux.ai/api/v1"):
+    """Тестирует ZenMux.ai API"""
+    print("=" * 60)
+    print("Тест подключения к ZenMux.ai API")
+    print("=" * 60)
+    
+    if not api_key or api_key == "YOUR_ZENMUX_API_KEY_HERE":
+        print("❌ ZenMux API ключ не найден в telegram_config.json", file=sys.stderr)
+        return False
+    
+    print(f"🔑 Найден API ключ: {api_key[:20]}...", file=sys.stderr)
+    print(f"🧪 Тестирую модель: {model}", file=sys.stderr)
+    print(f"🌐 Endpoint: {base_url}", file=sys.stderr)
+    print("Тестирую подключение к ZenMux.ai API...", file=sys.stderr)
+    
+    url = f"{base_url}/chat/completions"
+    
+    payload = {
+        "model": model,
+        "messages": [
+            {
+                "role": "user",
+                "content": "Ответь кратко на русском: Привет! Как дела?"
+            }
+        ],
+        "temperature": 0.7,
+        "max_tokens": 300
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        print(f"Отправляю запрос на {url}...", file=sys.stderr)
+        response = requests.post(url, json=payload, headers=headers, timeout=30)
+        print(f"Получен ответ со статусом: {response.status_code}", file=sys.stderr)
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"Структура ответа: {json.dumps(result, indent=2, ensure_ascii=False)[:500]}", file=sys.stderr)
+            
+            if 'choices' in result and len(result['choices']) > 0:
+                message = result['choices'][0].get('message', {})
+                content = message.get('content', '')
+                # Если content пустой, проверяем reasoning (для моделей с reasoning)
+                if not content and 'reasoning' in message:
+                    content = message.get('reasoning', '')
+                if content:
+                    print(f"✅ Модель {model} работает!", file=sys.stderr)
+                    print(f"📝 Ответ: {content[:200]}...", file=sys.stderr)
+                    return True
+                else:
+                    print(f"⚠️ Сообщение без content и reasoning: {list(message.keys())}", file=sys.stderr)
+            else:
+                print(f"⚠️ Модель {model} ответила, но без choices или choices пуст", file=sys.stderr)
+                print(f"Полный ответ API: {json.dumps(result, indent=2, ensure_ascii=False)}", file=sys.stderr)
+        else:
+            print(f"❌ Ошибка HTTP {response.status_code}", file=sys.stderr)
+            print(f"URL: {url}", file=sys.stderr)
+            print(f"Headers: {headers}", file=sys.stderr)
+            try:
+                error_data = response.json()
+                print(f"Детали ошибки: {json.dumps(error_data, indent=2, ensure_ascii=False)}", file=sys.stderr)
+            except:
+                print(f"Текст ошибки: {response.text[:500]}", file=sys.stderr)
+            
+            if response.status_code == 401 or response.status_code == 403:
+                print("\n❌ Проблема с API ключом. Проверьте:", file=sys.stderr)
+                print("1. Правильно ли скопирован ключ из ZenMux.ai", file=sys.stderr)
+                print("2. Не истек ли срок действия ключа", file=sys.stderr)
+                print("3. Есть ли у ключа доступ к выбранной модели", file=sys.stderr)
+                return False
+                
+    except requests.exceptions.Timeout:
+        print(f"⏱️ Таймаут при обращении к ZenMux.ai API", file=sys.stderr)
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Ошибка сети: {e}", file=sys.stderr)
+        if hasattr(e, 'response') and e.response is not None:
+            print(f"   Status: {e.response.status_code}", file=sys.stderr)
+            print(f"   Response: {e.response.text[:500]}", file=sys.stderr)
+    except Exception as e:
+        print(f"❌ Ошибка при тестировании: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+    
+    print("\n❌ Не удалось подключиться к ZenMux.ai API", file=sys.stderr)
+    return False
+
+if __name__ == "__main__":
+    # Загружаем конфигурацию
+    try:
+        with open('telegram_config.json', 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            api_key = config.get('zenmux_api_key')
+            model = config.get('zenmux_model', 'google/gemini-3-pro-preview-free')
+            base_url = config.get('zenmux_base_url', 'https://zenmux.ai/api/v1')
+            
+            if test_zenmux(api_key, model, base_url):
+                print("\n✅ Успешное подключение к ZenMux.ai API", file=sys.stderr)
+                sys.exit(0)
+            else:
+                print("\n❌ Ошибка подключения к ZenMux.ai API", file=sys.stderr)
+                print("Проверьте настройки и попробуйте снова.", file=sys.stderr)
+                sys.exit(1)
+    except Exception as e:
+        print(f"Ошибка: {e}", file=sys.stderr)
+        sys.exit(1)
+
