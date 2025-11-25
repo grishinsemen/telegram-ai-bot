@@ -1000,43 +1000,11 @@ def process_updates(config: BotConfig, bot_username: Optional[str], session: req
         print(f"Ошибка при обработке обновлений: {e}", file=sys.stderr)
 
 def get_config() -> Optional[BotConfig]:
-    """Получает конфигурацию из переменных окружения или файла"""
-    # Сначала пробуем переменные окружения (для Railway/облачных платформ)
-    if os.getenv('BOT_TOKEN'):
-        print("📦 Загружаю конфигурацию из переменных окружения...", file=sys.stderr)
-        config_dict = {
-            'bot_token': os.getenv('BOT_TOKEN', ''),
-            'chat_id': os.getenv('CHAT_ID', ''),
-            'zenmux_api_key': os.getenv('ZENMUX_API_KEY', ''),
-            'zenmux_model': os.getenv('ZENMUX_MODEL', 'google/gemini-3-pro-preview-free'),
-            'zenmux_base_url': os.getenv('ZENMUX_BASE_URL', 'https://zenmux.ai/api/v1'),
-            'fallback_models': os.getenv('FALLBACK_MODELS', '[]'),  # JSON строка
-            'openrouter_api_key': os.getenv('OPENROUTER_API_KEY', ''),
-            'openrouter_model': os.getenv('OPENROUTER_MODEL', 'openai/gpt-4o-mini'),
-            'groq_api_key': os.getenv('GROQ_API_KEY', ''),
-            'groq_model': os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
-            'assemblyai_api_key': os.getenv('ASSEMBLYAI_API_KEY', ''),
-            'deepgram_api_key': os.getenv('DEEPGRAM_API_KEY', ''),
-            'lemonfox_api_key': os.getenv('LEMONFOX_API_KEY', ''),
-            'personality': os.getenv('PERSONALITY', 'default')
-        }
-        
-        # Парсим fallback_models если это JSON строка
-        if isinstance(config_dict['fallback_models'], str) and config_dict['fallback_models']:
-            try:
-                config_dict['fallback_models'] = json.loads(config_dict['fallback_models'])
-            except:
-                config_dict['fallback_models'] = []
-        elif not config_dict['fallback_models']:
-            config_dict['fallback_models'] = []
-        
-        return BotConfig(config_dict)
-    
-    # Если переменных окружения нет, загружаем из файла
+    """Получает конфигурацию из файла telegram_config.json"""
     config_file = "telegram_config.json"
     if not os.path.exists(config_file):
-        print(f"Файл {config_file} не найден и переменные окружения не установлены", file=sys.stderr)
-        print("   Установите BOT_TOKEN или создайте telegram_config.json", file=sys.stderr)
+        print(f"❌ Файл {config_file} не найден", file=sys.stderr)
+        print(f"   Создайте файл {config_file} с настройками бота", file=sys.stderr)
         return None
     
     try:
@@ -1045,7 +1013,7 @@ def get_config() -> Optional[BotConfig]:
             config_dict = json.load(f)
         return BotConfig(config_dict)
     except Exception as e:
-        print(f"Ошибка при чтении конфигурации: {e}", file=sys.stderr)
+        print(f"❌ Ошибка при чтении конфигурации: {e}", file=sys.stderr)
         return None
 
 def main():
