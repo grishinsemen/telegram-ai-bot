@@ -223,6 +223,8 @@ def generate_response(text: str, config: BotConfig, session: requests.Session) -
                 return response
         
         print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Все модели ZenMux не ответили", file=sys.stderr)
+    else:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ ZenMux не настроен (нет API ключа)", file=sys.stderr)
     
     # Пробуем OpenRouter
     if config.has_openrouter():
@@ -242,6 +244,8 @@ def generate_response(text: str, config: BotConfig, session: requests.Session) -
             print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ OpenRouter сработал!", file=sys.stderr)
             return response
         print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ OpenRouter тоже не ответил", file=sys.stderr)
+    else:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ OpenRouter не настроен (нет API ключа)", file=sys.stderr)
     
     # Пробуем OpenAI
     if config.has_openai():
@@ -260,7 +264,7 @@ def generate_response(text: str, config: BotConfig, session: requests.Session) -
     
     # Пробуем Groq
     if config.has_groq():
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔄 OpenAI не ответил, пробую Groq: {config.groq_model}", file=sys.stderr)
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔄 Пробую Groq: {config.groq_model}", file=sys.stderr)
         provider_config = {
             'name': 'Groq',
             'url': 'https://api.groq.com/openai/v1/chat/completions',
@@ -272,6 +276,24 @@ def generate_response(text: str, config: BotConfig, session: requests.Session) -
             print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Groq сработал!", file=sys.stderr)
             return response
         print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Groq тоже не ответил", file=sys.stderr)
+    else:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ Groq не настроен (нет API ключа)", file=sys.stderr)
+    
+    # Финальное сообщение, если все провайдеры не сработали
+    available_providers = []
+    if config.has_zenmux():
+        available_providers.append("ZenMux")
+    if config.has_openrouter():
+        available_providers.append("OpenRouter")
+    if config.has_openai():
+        available_providers.append("OpenAI")
+    if config.has_groq():
+        available_providers.append("Groq")
+    
+    if available_providers:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Все настроенные провайдеры не ответили: {', '.join(available_providers)}", file=sys.stderr)
+    else:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Нет настроенных провайдеров! Добавьте API ключи в telegram_config.json", file=sys.stderr)
     
     return None
 
