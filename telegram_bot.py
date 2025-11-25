@@ -1176,9 +1176,17 @@ def main():
     print("\n" + "-" * 60 + "\n", file=sys.stderr)
     
     try:
+        last_status_time = time.time()
         while True:
             cleanup_temp_voice_files()  # Периодически очищаем временные файлы
             process_updates(config, bot_username, session)
+            
+            # Каждые 60 секунд выводим статус (если нет активности)
+            current_time = time.time()
+            if current_time - last_status_time > 60:
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] ⏳ Бот работает, ожидаю сообщения...", file=sys.stderr)
+                last_status_time = current_time
+            
             time.sleep(1)
     except KeyboardInterrupt:
         print("\n\n" + "=" * 60, file=sys.stderr)
